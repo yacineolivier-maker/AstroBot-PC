@@ -1,0 +1,13 @@
+# Never commit game data, builds or logs
+Rom/
+Jeu/
+*.exe
+*.dll
+*.pdb
+*.bin
+*.gnfp
+*.png
+*.csv
+journaux/
+_SaveData/
+_PipelineCache/

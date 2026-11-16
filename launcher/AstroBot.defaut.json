@@ -1,0 +1,17 @@
+{
+  "_aide": "Reglages d'Astro Bot (lus a chaque lancement). Voir docs\\MANETTE.md.",
+  "manette": {
+    "Cross": "South", "Circle": "East", "Square": "West", "Triangle": "North",
+    "Options": "Start", "L1": "LeftShoulder", "R1": "RightShoulder",
+    "L2": "LeftTrigger", "R2": "RightTrigger", "L3": "LeftStick", "R3": "RightStick",
+    "Up": "DpadUp", "Down": "DpadDown", "Left": "DpadLeft", "Right": "DpadRight",
+    "TouchPad": "Back",
+    "TouchPadMode": "Guide"
+  },
+  "micro": "",
+  "volumeHautParleurManette": 100,
+  "vibration": 100,
+  "pleinEcran": false,
+  "journalFps": true,
+  "argumentsSupplementaires": []
+}

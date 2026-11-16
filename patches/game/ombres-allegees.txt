@@ -1,0 +1,4 @@
+# Ombres allegees, tous les niveaux (KYTY_APP0_SUBST) : portee des ombres du soleil plafonnee a 20.
+# Aerial Garden : 50 -> 20 = -35 % de dessins d ombre (12/11). Les ombres proches restent ; au-dela, fondu du jeu.
+# Format : chemin sous /app0 (* = tout le dossier)<TAB>balise ou texte<TAB>max:<valeur> ou texte de meme longueur.
+data/prein/spx/*	<DirShadowFar>	max:20
