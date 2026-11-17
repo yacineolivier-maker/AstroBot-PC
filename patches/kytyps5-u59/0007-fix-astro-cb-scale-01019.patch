@@ -1,0 +1,99 @@
+From b3f2439c5bc9602ac0c3f8ddca84c42d827b6f4a Mon Sep 17 00:00:00 2001
+From: Yacine <234833416+yacineolivier-maker@users.noreply.github.com>
+Date: Mon, 16 Nov 2026 17:17:08 +0100
+Subject: [PATCH] gamePatch: KYTY_ASTRO_CB_SCALE also for Astro Bot 01.019.000
+
+The EU 1.019 build crashes the same way as earlier versions (guest pc +0x4a0c3e, Draw
+Geometry thread, int 0x41 assert on its own command buffer). The table of draw-thread
+command buffer sizes is searched in readable pages and patched only when it is found
+exactly once (found at +0x8491550: 14/14/8/8/12 MiB, doubled by default). No cost measured
+(x2 21.1 / 24.9 fps, x1 19.8 / 24.6).
+
+Prepared with AI assistance (Claude).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018RUVGixg3FZ42pLUvKrQ31
+---
+ src/loader/gamePatch.cpp | 55 ++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 53 insertions(+), 2 deletions(-)
+
+diff --git a/src/loader/gamePatch.cpp b/src/loader/gamePatch.cpp
+index 64d4fc11..bf15d740 100644
+--- a/src/loader/gamePatch.cpp
++++ b/src/loader/gamePatch.cpp
+@@ -21,6 +21,13 @@
+ #include <utility>
+ #include <vector>
+ 
++#if KYTY_PLATFORM == KYTY_PLATFORM_WINDOWS
++#ifndef NOMINMAX
++#define NOMINMAX
++#endif
++#include <windows.h>
++#endif
++
+ namespace Loader::GamePatch {
+ 
+ namespace {
+@@ -357,12 +364,56 @@ void ApplyBuiltin(Program* main_program) {
+ 	std::string version;
+ 	if (!SystemContentParamSfoGetString("TITLE_ID", &title_id) ||
+ 	    !SystemContentParamSfoGetString("APP_VER", &version) || title_id != "PPSA21567" ||
+-	    version != "01.018.000") {
++	    (version != "01.018.000" && version != "01.019.000")) {
+ 		return;
+ 	}
+ 	static constexpr uint64_t kTable     = 0x8491510;
+ 	static constexpr uint32_t kSizes[5]  = {7, 7, 4, 4, 6};
+-	const auto                address    = main_program->base_vaddr + kTable;
++	uint64_t                  address    = main_program->base_vaddr + kTable;
++#if KYTY_PLATFORM == KYTY_PLATFORM_WINDOWS
++	if (version != "01.018.000") {
++		// Astro Bot PC (16/11): 01.019.000 crashes the same way (pc +0x4a0c3e, the same assert next
++		// to the same reader), its table elsewhere. Search the readable committed pages of the
++		// program for the five sizes, 4-byte aligned; patch only a unique match.
++		uint64_t       found = 0;
++		int            count = 0;
++		const uint64_t begin = main_program->base_vaddr;
++		const uint64_t end   = begin + main_program->mapped_size;
++		for (uint64_t at = begin; at < end;) {
++			MEMORY_BASIC_INFORMATION info {};
++			if (VirtualQuery(reinterpret_cast<LPCVOID>(at), &info, sizeof(info)) == 0) {
++				break;
++			}
++			const auto region_begin = std::max<uint64_t>(at, reinterpret_cast<uint64_t>(info.BaseAddress));
++			const auto region_end   = std::min<uint64_t>(end, reinterpret_cast<uint64_t>(info.BaseAddress) + info.RegionSize);
++			const DWORD readable    = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ |
++			                       PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
++			if (info.State == MEM_COMMIT && (info.Protect & readable) != 0 && (info.Protect & PAGE_GUARD) == 0) {
++				for (uint64_t p = (region_begin + 3) & ~uint64_t {3}; p + sizeof(kSizes) <= region_end; p += 4) {
++					if (*reinterpret_cast<const uint32_t*>(p) == kSizes[0] &&
++					    std::memcmp(reinterpret_cast<const void*>(p), kSizes, sizeof(kSizes)) == 0) {
++						found = p;
++						count++;
++					}
++				}
++			}
++			at = region_end > at ? region_end : at + 0x1000;
++		}
++		if (count != 1) {
++			::printf("Game patch: Astro Bot %s command buffer table: %d matches, not patched "
++			         "(KYTY_ASTRO_CB_SCALE)\n",
++			         version.c_str(), count);
++			return;
++		}
++		address = found;
++		::printf("Game patch: Astro Bot %s command buffer table found at +0x%llx\n", version.c_str(),
++		         static_cast<unsigned long long>(found - begin));
++	}
++#else
++	if (version != "01.018.000") {
++		return;
++	}
++#endif
+ 	if (!IsInsideProgram(*main_program, address, sizeof(kSizes)) ||
+ 	    std::memcmp(reinterpret_cast<const void*>(address), kSizes, sizeof(kSizes)) != 0) {
+ 		::printf("Game patch: Astro Bot command buffer table not found (KYTY_ASTRO_CB_SCALE)\n");
+-- 
+2.50.1.windows.1
+

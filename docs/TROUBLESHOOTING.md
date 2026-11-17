@@ -48,6 +48,9 @@ Most Astro Bot reports fall here (55 issues). Several different causes produce t
 | `unsupported texture mip view changes physical layout` (official builds, Nov. 2026) | mip view past the image's last level | open PR [#2172](https://github.com/KytyPS5/KytyPS5/pull/2172) | [#1993](https://github.com/KytyPS5/KytyPS5/issues/1993), [#2196](https://github.com/KytyPS5/KytyPS5/issues/2196), [#2222](https://github.com/KytyPS5/KytyPS5/issues/2222) |
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 - **Measured:** Jetsku U59 int21 boots and plays 01.019 on our Intel + RTX 3060 machine.
 - **Measured:** the official build `KytyPS5-2026-11-14-3e226bf`, used as released, stopped on our machine in 5 of
   the 8 levels we tried (Dirty Bath, Lava Ship, Horror Time, Sky Aztec, Construction), for example with
@@ -68,6 +71,9 @@ fixed it. Issues: [#853](https://github.com/KytyPS5/KytyPS5/issues/853),
 [Jetsku#19](https://github.com/Jetsku/KytyPS5/issues/19), [Jetsku#24](https://github.com/Jetsku/KytyPS5/issues/24).
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 - **Measured:** with U59 int21 and its preset (`KYTY_RT_SOFTWARE=auto`), 01.019 renders correctly on our RTX 3060
   **without** any non-RT patch (checked on screenshots).
 - **Measured:** forcing `KYTY_RT_SOFTWARE=0` gave us a black image (lighting gone) and no fps gain. We do not
@@ -85,6 +91,9 @@ What worked for us:
 | crash in `amdvlk64.dll` in the loading tunnel | AMD driver crash on a pipeline | fixed in Jetsku AMD test 5 (int18.1) | [Jetsku#22](https://github.com/Jetsku/KytyPS5/issues/22) |
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 - **Measured:** we hit the `pc=0x9004a0c3e` crash twice on **01.019** (once with `KYTY_LABEL_MODE=split`, once with
   `record` on an experimental build). `KYTY_LABEL_MODE=record` therefore does not prevent it. It is rare for us,
   but we have no crash rate over long sessions.
@@ -106,6 +115,9 @@ Issues: [#713](https://github.com/KytyPS5/KytyPS5/issues/713), [#831](https://gi
 driver.
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 - **Measured, limited:** our only documented device losses came from our own experiment (letting the GPU read guest
   memory directly). Jetsku#71 (RTX 3060, int20) was reported fixed in int21; we play int21 on an RTX 3060 without
   device losses in our test runs. That says nothing about other GPUs.
@@ -118,6 +130,9 @@ Issues: [#1797](https://github.com/KytyPS5/KytyPS5/issues/1797), [#2001](https:/
 (`ErrorOutOfDeviceMemory`, `failed to create image`, `video memory full`).
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 - **Measured:** in a level the emulator uses **11.9-13.5 GB of RAM** and about **6 GB of VRAM** on our machine.
   When another program held about 9 GB of VRAM, the emulator's Vulkan budget dropped to 5.8 GB, and with RAM nearly
   exhausted the game fell to 1.7 fps.
@@ -133,6 +148,9 @@ The game's logic follows the frame rate, so below its target it runs in slow mot
 [#1081](https://github.com/KytyPS5/KytyPS5/issues/1081)).
 
 What worked for us:
+- **Fixed (16 Nov 2026):** the buffer doubling extended to 01.019.000, patch
+  [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch) (the table is
+  searched in memory and patched only when found exactly once). No cost measured; not seen again in our test runs.
 
 | Change | Effect on our machine | Evidence |
 |---|---|---|

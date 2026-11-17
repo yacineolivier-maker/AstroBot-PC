@@ -1,0 +1,55 @@
+# EXPERIMENTAL (17 Nov 2026), not measured yet: graphics-light.txt + block B (SSR steps, SSAO samples, spot shadow
+# size, cascades back to the engine defaults) + block C (the same LOD / draw distance added to the heavy levels whose
+# scene files lack the tags, with the add: rule of the astrobot-experiments branch). Comments below are in French.
+# Essai audit 17/11/2026, revu par le Lot E (NON ACTIVE). Production combo A + B (GPU) + C (combo A etendu par add:).
+# Mesurer d'abord essai-audit-C.txt, puis essai-audit-B.txt, puis ce fichier ; O et S a part.
+# Syntaxe KYTY_APP0_SUBST (build MC, fileSystem.cpp) : chemin<TAB>texte<TAB>regle. Regles :
+#   max:<v> plafond, mul:<f> facteur, texte de meme longueur, insert-after:<t> / insert-before:<t> / add:<t>
+#   (Lot E 17/11 : add: insere <t> sur une nouvelle ligne apres la 1re ligne contenant l'ancre, SEULEMENT si la
+#   balise ouvrante de <t> est absente du fichier ; \n dans <t> = fin de ligne). Taille du fichier inchangee :
+#   l'insertion est compensee en retirant de l'indentation (sans effet sur le XML). Ordre : les max:/mul: d'abord,
+#   les add: ensuite (valeurs inserees = valeurs finales, non remultipliees). Journal : lignes "App0Subst: ...".
+# Fait verifie (432 .spx du jeu) : l'ordre des balises varie d'un fichier a l'autre (1224 paires inversees),
+# le lecteur ne depend donc pas de la position ; un fichier livre a meme une balise en double (HeightFog/HeightEnd).
+# --- A. Production (= graphismes-alleges.txt, combo A, accord du porteur 16/11)
+data/prein/spx/*	<DirShadowFar>	max:20
+data/prein/spx/*	<Distance0>	mul:0.35
+data/prein/spx/*	<Distance1>	mul:0.35
+data/prein/spx/*	<Distance2>	mul:0.35
+data/prein/spx/*	<Distance3>	mul:0.35
+data/prein/spx/*	<OverrideFarDistance>	max:300
+data/prein/spx/*	<DistanceThreshold>	max:20
+data/prein/spx/*	<RoughnessThreshold>	mul:0.5
+# --- B. GPU, risque visuel faible : valeurs des niveaux legers / defauts du moteur
+# SSR : MaxSteps 172 (Clock Tower) / 130 -> 96. Touche aussi ScreenSpaceShadow/MaxSteps 128.0.
+data/prein/spx/*	<MaxSteps>	max:96
+# SSAO : SampleCount 128/256 -> 64 (84 fichiers sur 90 deja a 64).
+data/prein/spx/*	<SampleCount>	max:64
+# Ombres des projecteurs 1536 -> 1024.
+data/prein/spx/*	<SpotShadowMapSize>	max:1024
+# Cascades du soleil 3 -> 2 la ou la balise existe. Le moteur borne la valeur a [2,4] (0x7345b95) : 2 = minimum.
+data/prein/spx/*	<DirShadowCascadeCap>	max:2
+# --- C. Combo A etendu aux niveaux lourds dont les .spx n'ont pas la balise (avant : injections dans des lignes
+# TransparentFog*, remplacees ici par add:). LOD x0,35 des distances par defaut (15/20/25 selon l'audit) et dessin 300 m.
+# Lava Ship : pas de bloc <Lod> du tout.
+data/prein/spx/small_pot_lava_1.spx	</Pipeline>	add:<Lod>\n<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>\n</Lod>
+data/prein/spx/small_pot_lava_canon_top.spx	</Pipeline>	add:<Lod>\n<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>\n</Lod>
+# Horror Time et Construction : bloc <Lod> reduit a <Type>Hybrid</Type>, distances ajoutees dans ce bloc.
+data/prein/spx/nx_pd_ghostworld_night.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+data/prein/spx/nx_pd_ghostworld_night_goal_area.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+data/prein/spx/nx_pd_ghostworld_night_secret_bright.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+data/prein/spx/nx_pd_ghostworld_night_secret_dark.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+data/prein/spx/construction.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+data/prein/spx/construction_secret_room.spx	<Lod>	add:<Distance0>5.25</Distance0>\n<Distance1>7</Distance1>\n<Distance2>8.75</Distance2>
+# Distance de dessin 300 m la ou <OverrideFarDistance> manque (Clock Tower, Dirty Bath, Lava, Horror Time,
+# construction_secret_room). add: ne fait rien si la balise existe deja.
+data/prein/spx/mini_astro_clock_tower_*	</Pipeline>	add:<OverrideFarDistance>300</OverrideFarDistance>
+data/prein/spx/bath_*	</Pipeline>	add:<OverrideFarDistance>300</OverrideFarDistance>
+data/prein/spx/small_pot_lava_*	</Pipeline>	add:<OverrideFarDistance>300</OverrideFarDistance>
+data/prein/spx/nx_pd_ghostworld_night*	</Pipeline>	add:<OverrideFarDistance>300</OverrideFarDistance>
+data/prein/spx/construction_secret_room.spx	</Pipeline>	add:<OverrideFarDistance>300</OverrideFarDistance>
+# --- Herbe interactive (dynamic_grass) : NE PAS passer ActivateDistanceFromHero de -1 a 30 (ancienne regle D).
+# Decompilation (mise a jour 0x5e0d450-0x5e0d896, valeur a objet+0xe00, defaut -1) : la valeur est un PLANCHER du
+# rayon de recherche du heros (vmaxss 0x5e0d543) et le seuil d'activation du traitement complet (0x5e0d80d-0x5e0d896,
+# -1 -> seuil 1 m). 30 elargirait la recherche et activerait le traitement complet a 30 m : plus de CPU, pas moins.
+# SkipFrame (objet+0xddf, defaut vrai) est deja vrai sur les 8403 dynamic_grass du jeu (traitement 1 image sur 10).

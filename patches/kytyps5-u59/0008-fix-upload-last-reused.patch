@@ -1,0 +1,47 @@
+From 43863fa1ca0aa87c2fd3bbdde08ea1b6bce373bc Mon Sep 17 00:00:00 2001
+From: Yacine <234833416+yacineolivier-maker@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 12:47:27 +0100
+Subject: [PATCH] UploadShaderData: report a last-upload hit as a reuse
+ (KYTY_UPLOAD_LAST_REUSED=1)
+
+Without the dedup table, the "same bytes as the last upload of this site" path returned
+last.allocation without reused(), so *fresh stayed true for a range allocated earlier in the
+same tick. With KYTY_PUSH_SHADOW_FRESH_SKIP / KYTY_SET_REUSE_FRESH this skips the push
+comparison and the set reuse lookup that could have matched. The table path already calls
+reused(). Lost saving only, never a wrong image. Default off until measured in game.
+
+Prepared with AI assistance (Claude).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_018RUVGixg3FZ42pLUvKrQ31
+---
+ .../host_gpu/renderer/pipeline/descriptors.cpp      | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/src/graphics/host_gpu/renderer/pipeline/descriptors.cpp b/src/graphics/host_gpu/renderer/pipeline/descriptors.cpp
+index 6fd217cc..784c3629 100644
+--- a/src/graphics/host_gpu/renderer/pipeline/descriptors.cpp
++++ b/src/graphics/host_gpu/renderer/pipeline/descriptors.cpp
+@@ -1342,6 +1342,19 @@ vk::DescriptorBufferInfo RenderExecutor::UploadShaderData(std::span<const uint32
+ 				Profiler::CountFrameEvent(Profiler::FrameEvent::ShaderUploadReuseHits);
+ 				Profiler::CountFrameEvent(Profiler::FrameEvent::ShaderUploadBytesAvoided,
+ 				                          data.size_bytes());
++				// Astro Bot PC (audit 17/11, lot C3): KYTY_UPLOAD_LAST_REUSED=1 (default off) reports
++				// this hit as a reuse (*fresh = false), as the table path below does: the range was
++				// allocated earlier in this tick for byte-identical data, so an earlier descriptor of
++				// this recording may refer to it. Without it the hit stays "fresh", and
++				// KYTY_PUSH_SHADOW_FRESH_SKIP / KYTY_SET_REUSE_FRESH skip the push comparison and the
++				// set reuse lookup that could have matched (a lost saving, not a wrong image).
++				static std::atomic<int64_t> last_reused_once {Common::OnceUnset};
++				if (static_cast<bool>(Common::Once(last_reused_once, [] {
++					    const auto* value = std::getenv("KYTY_UPLOAD_LAST_REUSED");
++					    return value != nullptr && std::strcmp(value, "1") == 0;
++				    }))) {
++					return reused(last.allocation);
++				}
+ 				return last.allocation;
+ 			}
+ 			const auto allocation = NativeUpload(m_context, data);
+-- 
+2.50.1.windows.1
+

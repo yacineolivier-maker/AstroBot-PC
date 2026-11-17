@@ -1,0 +1,12 @@
+# Lighter graphics, all levels (KYTY_APP0_SUBST rules), used on the test PC since 16 Nov 2026: about +1 to +3 fps on
+# the heavy levels, image checked by eye. Sun shadow range 20, LOD distances x0.35, draw distance 300 m, screen-space
+# reflections range 20 m and roughness threshold x0.5 (DistanceThreshold also caps contact shadows and SSAO beyond 20 m).
+# mul: needs the astrobot-experiments branch of the Jetsku fork (the published 0002 patch has max: and same-length text).
+data/prein/spx/*	<DirShadowFar>	max:20
+data/prein/spx/*	<Distance0>	mul:0.35
+data/prein/spx/*	<Distance1>	mul:0.35
+data/prein/spx/*	<Distance2>	mul:0.35
+data/prein/spx/*	<Distance3>	mul:0.35
+data/prein/spx/*	<OverrideFarDistance>	max:300
+data/prein/spx/*	<DistanceThreshold>	max:20
+data/prein/spx/*	<RoughnessThreshold>	mul:0.5

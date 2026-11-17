@@ -20,8 +20,9 @@ CPU.
 - Boots, menus, hub (Crashsite) and every main level that was tried. Each of the 24 main levels was loaded directly
   and played for its first 45 seconds or more. The owner plays it with an Xbox controller.
 - Stable in general: dozens of automated launches in a row closed cleanly. Over all our testing, the known in-level
-  crash at `pc=0x9004a0c3e` (the game's own command-buffer check) happened twice. See
-  [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+  crash at `pc=0x9004a0c3e` (the game's own command-buffer check) happened twice. It is fixed for the EU 1.019 build
+  since 16 Nov 2026 by [`0007-fix-astro-cb-scale-01019.patch`](../patches/kytyps5-u59/0007-fix-astro-cb-scale-01019.patch)
+  (draw-thread command buffers doubled, no cost measured). See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 - Optional: A/B/X/Y button prompts in place of the PlayStation symbols (`tools/xbox-icons`, through the
   `KYTY_APP0_OVERLAY` patch).
 
@@ -46,6 +47,11 @@ The worst case was measured on 16 Nov while Astro moved, from a fixed spot facin
 - **`KYTY_FSR3_FG=0`.** FSR 3 frame generation doubled the displayed frames but lowered the computed ones (13 to 17
   fps) and **froze in the middle of a level**. Keep it off.
 - **`KYTY_DRAW_PREP_WORKERS=3`** (in the experimental branches): about +0.8 fps in the heavy levels.
+- **`KYTY_HOST_MUTEX_SRW=1`** ([`0006-perf-host-mutex-srw.patch`](../patches/kytyps5-u59/0006-perf-host-mutex-srw.patch)):
+  about +1.7 fps in Aerial Garden and much better lows (5 % low 22 instead of 16 to 20).
+- **Lighter graphics rules** ([`patches/game/graphics-light.txt`](../patches/game/graphics-light.txt)): about +1 to +3
+  fps on the heavy levels, image judged unchanged. With SRW, draw-prep workers and these rules, Aerial Garden while
+  moving is at about 24 to 25 fps in the fast runs (see the bimodal note in [PERFORMANCE.md](PERFORMANCE.md)).
 
 ## Other builds tried on this PC
 

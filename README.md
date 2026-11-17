@@ -16,10 +16,10 @@ Tools, patches and notes to play **ASTRO BOT** (PS5, PPSA21567, European release
 | [`docs/STATUS.md`](docs/STATUS.md) | What works, frame rate per level, the settings that mattered, problems seen |
 | [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) | What limits the frame rate on an Intel + RTX PC, and the dead ends, measured |
 | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Known ASTRO BOT problems reported by the community, and what worked for us |
-| [`patches/kytyps5-u59`](patches/kytyps5-u59) | Five patches for [Jetsku/KytyPS5](https://github.com/Jetsku/KytyPS5) `744705ee` (U59): Esc leaves full screen, `/app0` overlay and text substitutions, Windows thread names, render-pass statistics, **AMD `rsqrt` modes on Intel CPUs** |
-| [`patches/game`](patches/game) | A substitution rule (shadow distance capped at 20) for `KYTY_APP0_SUBST`; it only changes text in memory, never the game files |
+| [`patches/kytyps5-u59`](patches/kytyps5-u59) | Eight patches for [Jetsku/KytyPS5](https://github.com/Jetsku/KytyPS5) `744705ee` (U59), to apply in order: Esc leaves full screen, `/app0` overlay and text substitutions, Windows thread names, render-pass statistics, **AMD `rsqrt` modes on Intel CPUs**, **SRW host mutexes (+1.7 fps)**, **fix of the 1.019 `pc=0x9004a0c3e` crash**, a descriptor reuse fix (not measured yet) |
+| [`patches/game`](patches/game) | Substitution rules for `KYTY_APP0_SUBST` (shadow range 20; lighter graphics, +1 to +3 fps; an experimental extension); they only change text in memory, never the game files |
 | [`launcher`](launcher) | `AstroBot.exe` launcher (C#): settings file, controller mapping, environment variables, per-second fps log |
-| [`tools`](tools) | Measurement scripts (PowerShell): level run with automatic movement, per-thread CPU load, stack sampler (C++), A/B/X/Y button icon generator (Python) |
+| [`tools`](tools) | Measurement scripts (PowerShell): level run with automatic movement, per-thread CPU load, stack sampler (C++), A/B/X/Y button icon generator (Python), report of the frame-drop journal `KYTY_FLUIDITE` (Python, `fluidite-bilan.py`) |
 
 The emulator branches live in two forks (no pull request was opened upstream):
 
@@ -83,5 +83,8 @@ légalement et déchiffrée.
   n'a été ouverte vers les dépôts d'origine.
 - **Réglage clé sur processeur Intel** : `KYTY_AMD_RSQRT=fast`, jusqu'à deux fois plus d'images par seconde sur
   certains niveaux.
+- **Depuis le 17/11** : verrous SRW (`0006`, environ +1,7 i/s), correctif du plantage `pc=0x9004a0c3e` en 1.019
+  (`0007`), réglages graphiques allégés (`patches/game/graphics-light.txt`, +1 à +3 i/s) ; expériences non encore
+  mesurées dans la branche `astrobot-experiments` du fork Jetsku.
 
 Préparé avec l'aide d'une IA (Claude) ; essais réalisés sur le PC du propriétaire du dépôt.
