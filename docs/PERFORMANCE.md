@@ -73,7 +73,36 @@ critical path of a frame.
 - Crash of the EU 1.019 build at guest pc +0x4a0c3e: fixed by extending `KYTY_ASTRO_CB_SCALE` (patch `0007`).
 - A CPU-tuned build (`-march=alderlake` plus profile-guided optimisation): a few percent.
 
-## Next step
+## Update 18-19 Nov 2026: the command processor's per-draw cost
+
+- **Where the heavy spots go now.** With the guided in-emulator pilot and the frame-drop journal, each drop was
+  studied at its own spot (Pirate Island, Construction, Aerial Garden). In all three, the limit is the thread that
+  translates the game's command lists into Vulkan (`Thread_Gpu`, 75 to 95 % busy): about 4,000 to 6,000 draws per
+  frame. The GPU itself does 25 to 28 ms of work per frame. The journal's "gpu" cause is misleading here: its GPU time
+  runs from submission to completion, so it includes the wait behind the translation.
+- **A profile-guided build of our own tree** (profile recorded on Astro Bot, `-march=alderlake`): about +6 % at
+  Pirate Island and Construction. It is the build in use since 18 Nov. Over a 21-minute session of the owner (hub, Sky
+  Aztec, Aerial Garden), the average was 29.0 fps, with 81 % of the time at 29 or more.
+- **Beware of fine-grained timers.** `KYTY_CP_COMMIT_STATS=steps` times about 55 steps per draw, and each step
+  boundary costs about 0.06 µs. A "continuation" draw (same state as the previous one) reads 5.4 µs, but really costs
+  about 2 µs. The coarser per-phase figures are inflated the same way: subtract the calibration before estimating a
+  gain. At Pirate Island, real costs per frame are about 9 ms for continuations (about 3,500 at about 2.5 µs) and
+  about 27 ms for the other draws (starts after a pipeline, structure or instance change). Buffer binding is the
+  biggest step everywhere (about 7.5 ms per frame), but its memo already answers in about 80 ns (hits) and 135 ns
+  (misses, new per-draw addresses).
+- **Texture binding memo for depth images read as textures** (`KYTY_TEXTURE_MEMO_OVERLAP=1|verify`): 99.5 % of the
+  repeated texture sets that were never memorized were 1920x1080 depth targets sampled as R32F (an overlap answer of
+  the image lookup). Memorizing them while none of their pages change cut the misses from 1.3 million to 60,000, with
+  0 mismatches in verify mode. No fps gain beyond noise (about 1 ms per frame), so it stays off.
+- **Jetsku int22 on this PC** (built from source with its Astro Bot preset, plus our five patches, which it lacks:
+  direct level boot and file substitutions, `KYTY_AMD_RSQRT`, SRW mutexes rewritten for int22's inline mutex, the
+  1.019 crash fix, the upload fix). Alternating runs, Astro standing still at the Pirate Island spawn, same window:
+  our build 20.4 / 21.2 fps, int22 18.8 / 20.2. No gain on an i5-12400F + RTX 3060. int22 reports gains on a Ryzen
+  7950X3D + RTX 3090, so this may be specific to this CPU.
+- Also tried, no gain: `KYTY_IDLE_FLUSH_DRAWS=0`, a larger texture memo (`KYTY_TEXTURE_MEMO_SLOTS=32768`),
+  scene LOD rules at Pirate Island, merging the split MRT passes (only about ten splits per frame).
+
+## Next step (17 Nov)
 
 Experiments of 17 Nov 2026, coded after a static audit and **not measured yet** (all off by default, branch
 `astrobot-experiments` of the Jetsku fork; see `ASTROBOT-BRANCHES.md` there):

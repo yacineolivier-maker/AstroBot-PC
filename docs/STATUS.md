@@ -39,6 +39,11 @@ Measured on 12 Nov 2026 over 45 to 60 seconds after each level start, with the c
 The worst case was measured on 16 Nov while Astro moved, from a fixed spot facing the whole island in Aerial Garden:
 **23 to 24 fps**, with the 5 % lows around 20 to 22.
 
+**Since 18 Nov 2026** (our own profile-guided build of the experimental tree, see
+[PERFORMANCE.md](PERFORMANCE.md)): over a 21-minute session of the owner (hub, Sky Aztec, Aerial Garden), the average
+was **29.0 fps, with 81 % of the time at 29 or more**. The remaining drops are in a few very heavy views (Pirate
+Island, Aerial Garden facing the whole level), where the command-list translation thread is the limit.
+
 ## Settings that mattered
 
 - **`KYTY_AMD_RSQRT=fast` on Intel CPUs.** The game uses AMD-specific behaviour of the `rsqrt` instructions. With
